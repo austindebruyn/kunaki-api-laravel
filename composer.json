@@ -1,0 +1,22 @@
+{
+    "name": "austin/kunaki-api-laravel",
+    "description": "A PHP implementation of Kunaki.com's HTTP API for Laravel applications.",
+    "keywords": ["kunaki", "laravel"],
+    "authors": [
+        {
+            "name": "Austin deBruyn",
+            "email": "austin.debruyn@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "lib-libxml": "2.*",
+        "illuminate/support": "4.2.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Austin\\KunakiApiLaravel": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
