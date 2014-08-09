@@ -1,4 +1,4 @@
 kunaki-api-laravel
 ==================
 
-Kunaki API package for Laravel PHP framework.
+A PHP implementation of Kunaki.com's HTTP API for Laravel applications.
