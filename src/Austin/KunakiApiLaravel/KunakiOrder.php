@@ -87,9 +87,9 @@ class KunakiOrder
 		$this->shipping_options = null;
 
 		if (!is_integer($quantity) || $quantity < 1)
-			throw new InvalidArgumentException("Quantity should be an integer > 1.");
+			throw new \InvalidArgumentException("Quantity should be an integer > 1.");
 		if (!is_string($productID) || strlen($productID) < 1 || !preg_match('/^\w+$/', $productID))
-			throw new InvalidArgumentException("ProductID should be an alphanumberic string.");
+			throw new \InvalidArgumentException("ProductID should be an alphanumberic string.");
 
 		foreach ($this->product_list as &$p)
 			if ($p[0] == $productID) {
@@ -306,7 +306,7 @@ class KunakiOrder
 			throw new \BadMethodCallException("You need a Destination and a Customer to submit an order.");
 
 		if (!$this->shipping_options)
-			{$this->getShippingOptions(); dd($this->shipping_options);}
+			$this->getShippingOptions();
 		if (!isset($this->shipping_options[$shippingOptionIndex]))
 			throw new \OutOfRangeException;
 
