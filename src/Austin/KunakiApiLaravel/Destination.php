@@ -1,6 +1,5 @@
 <?php namespace Austin\KunakiApiLaravel;
 
-use \InvalidArgumentException;
 use Illuminate\Support\Facades\Validator;
 
 define('GOOGLE_API_CACHE_PREFIX', 'GOOGLE_API');
@@ -65,14 +64,14 @@ class Destination
 	 * 
 	 * @throws InvalidArgumentException if input fails validation test
 	 */
-	public function __construct($country = '', $state_province = '', $postal_code = '') {
-
+	public function __construct($country = '', $state_province = '', $postal_code = '')
+	{
 		$this->country = $country;
 		$this->state_province = $state_province;
 		$this->postal_code = $postal_code;
 
 		if (! $this->validateInput())
-			throw new InvalidArgumentException("Input did not pass validation.");
+			throw new \InvalidArgumentException("Input did not pass validation.");
 	}
 
 	/**
@@ -80,7 +79,8 @@ class Destination
 	 * 
 	 * @return string
 	 */
-	public function getCountry() {
+	public function getCountry()
+	{
 		return $this->country;
 	}
 
@@ -89,7 +89,8 @@ class Destination
 	 * 
 	 * @return string
 	 */
-	public function getStateProvince() {
+	public function getStateProvince()
+	{
 		return $this->state_province;
 	}
 
@@ -98,21 +99,24 @@ class Destination
 	 * 
 	 * @return string
 	 */
-	public function getPostalCode() {
+	public function getPostalCode()
+	{
 		return $this->postal_code;
 	}
 
 	/**
 	 * Validates that the inputs are in the format we expected.
 	 * 
-	 * @throws BadMethodCallException if Laravel's Validator Facade is not available
+	 * @throws \BadMethodCallException if Laravel's Validator Facade is not available
 	 * 
 	 * @return bool
 	 */
-	private function validateInput() {
-
+	private function validateInput()
+	{
 		if (! class_exists('Validator'))
-			throw new BadMethodCallException("Illuminate\Support\Facades\Validator can't be found.");
+		{
+			throw new \BadMethodCallException("\Illuminate\Support\Facades\Validator can't be found.");
+		}
 
 		$input = array(
 			'country' 			=> $this->country,
@@ -130,8 +134,8 @@ class Destination
 	 * 
 	 * @return KunakiAPI\Destination|false
 	 */
-	public static function fromPostalCode($postal_code) {
-
+	public static function fromPostalCode($postal_code)
+	{
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -143,11 +147,12 @@ class Destination
 		$http_query .= $postal_code;
 		$http_query = substr($http_query, 0, 1024);
 
-		if (\Cache::has(GOOGLE_API_CACHE_PREFIX.md5($http_query))) {
-
+		if (\Cache::has(GOOGLE_API_CACHE_PREFIX.md5($http_query)))
+		{
 			$response = \Cache::get(GOOGLE_API_CACHE_PREFIX.md5($http_query));
 		}
-		else {
+		else
+		{
 			curl_setopt($ch, CURLOPT_URL, $http_query);
 			$response = curl_exec($ch);
 			curl_close($ch);
@@ -155,12 +160,15 @@ class Destination
 		}
 
 		if (! $response)
+		{
 			return false;
+		}
 
 		$response = json_decode($response, true);
 		$resolved_state_province = '';
 
-		try {
+		try
+		{
 			foreach($response['results'][0]['address_components'] as $component)
 				if(in_array('country', $component['types']))
 					$resolved_country = $component['long_name'];
@@ -169,15 +177,22 @@ class Destination
 				if(in_array('administrative_area_level_1', $component['types']))
 					$resolved_state_province = $component[$resolved_country == 'Canada' ? 'long_name' : 'short_name'];
 		}
-		catch (\ErrorException $e) { /* ErrorException: Undefined offset */ }
+		catch (\ErrorException $e)
+		{
+			/**
+			 * \ErrorException: Undefined offset.
+			 * This means Google has changed the format of the JSON returned by this
+			 * API. This should really never happen. Handle it however you like.
+			 */
+		}
 
 		if (!isset($resolved_country) || !isset($resolved_state_province))
+		{
 			return false;
+		}
 
 		$d = new Destination($resolved_country, $resolved_state_province, $postal_code);
 		return $d;
 	}
-
-
 
 }

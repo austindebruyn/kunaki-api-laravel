@@ -42,13 +42,17 @@ class ShippingOption
 	 * 
 	 * @api
 	 */
-	public function __construct($name, $delivery_time, $price) {
+	public function __construct($name, $delivery_time, $price)
+	{
 
 		if (!is_string($name) || strlen($name) < 1)
 			throw new \InvalidArgumentException("ShippingOption->\$name ($name) is required and must be a string.");
+		
 		if (!is_string($delivery_time) || strlen($delivery_time) < 1)
 			throw new \InvalidArgumentException("ShippingOption->\$delivery_time ($delivery_time) is required and must be a string.");
+		
 		$price = floatval($price);
+
 		if (!is_float($price) || $price < 0)
 			throw new \InvalidArgumentException("ShippingOption->\$price ($price) must be positive float.");
 
@@ -64,7 +68,8 @@ class ShippingOption
 	 * 
 	 * @return string
 	 */
-	public function getName() {
+	public function getName()
+	{
 		return $this->name;
 	}
 
@@ -75,7 +80,8 @@ class ShippingOption
 	 * 
 	 * @return string
 	 */
-	public function getDeliveryTime() {
+	public function getDeliveryTime()
+	{
 		return $this->delivery_time;
 	}
 
@@ -86,10 +92,9 @@ class ShippingOption
 	 * 
 	 * @return float
 	 */
-	public function getPrice() {
+	public function getPrice()
+	{
 		return $this->price;
 	}
-
-
 
 }

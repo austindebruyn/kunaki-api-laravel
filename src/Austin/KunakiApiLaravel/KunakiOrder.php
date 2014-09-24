@@ -5,8 +5,6 @@ use Illuminate\Cache;
 define('KUNAKI_API_HOST', "https://kunaki.com/HTTPService.ASP");
 define('CACHE_KEY_PREFIX', 'KUNAKI');
 define('ORDER_STATUS_CACHE_KEY_PREFIX', 'KUNAKI_ORDER_STATUS');
-define('CACHE_TIMEOUT', '1440');
-define('ORDER_STATUS_CACHE_TIMEOUT', '30');
 
 class KunakiOrder
 {
@@ -238,7 +236,7 @@ class KunakiOrder
 															(float)$option->Price));
 		}
 
-		\Cache::add($cache_key, $this->shipping_options, CACHE_TIMEOUT);
+		\Cache::add($cache_key, $this->shipping_options, \Config::get('kunaki-api-laravel::timeout')['shipping_options']);
 		return $this->shipping_options;
 	}
 
@@ -400,7 +398,10 @@ class KunakiOrder
 		if (isset($xdoc->TrackingId))
 			$orderStatus['tracking_id'] 	= (string)$xdoc->TrackingId;
 
-		\Cache::put(ORDER_STATUS_CACHE_KEY_PREFIX.md5($http_query), $orderStatus, ORDER_STATUS_CACHE_TIMEOUT);
+		\Cache::put(
+			ORDER_STATUS_CACHE_KEY_PREFIX.md5($http_query), $orderStatus,
+			\Config::get('kunaki-api-laravel::timeout')['order_status']
+		);
 
 		return $orderStatus;
 	}
