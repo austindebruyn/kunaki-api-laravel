@@ -31,18 +31,25 @@ class ShippingOption
 	 */
 	private $price;
 
+    /**
+     * Represents the index in the array that this shipping option came from.
+     * Settings this variable in the dependent class is just a helpful shortcut.
+     *
+     * @var integer
+     */
+    private $index;
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param string $name
-	 * @param string $delivery_time
-	 * @param float  $price
+	 * @param string  $name
+	 * @param string  $delivery_time
+	 * @param float   $price
+     * @param integer $index
 	 * 
-	 * @throws InvalidArgumentException if invalid data
-	 * 
-	 * @api
+	 * @throws InvalidArgumentException
 	 */
-	public function __construct($name, $delivery_time, $price)
+	public function __construct($name, $delivery_time, $price, $index)
 	{
 
 		if (!is_string($name) || strlen($name) < 1)
@@ -59,12 +66,11 @@ class ShippingOption
 		$this->name = $name;
 		$this->delivery_time = $delivery_time;
 		$this->price = $price;
+        $this->index = $index;
 	}
 
 	/**
 	 * Gets the name.
-	 * 
-	 * @api
 	 * 
 	 * @return string
 	 */
@@ -76,8 +82,6 @@ class ShippingOption
 	/**
 	 * Gets the delivery time.
 	 * 
-	 * @api
-	 * 
 	 * @return string
 	 */
 	public function getDeliveryTime()
@@ -88,13 +92,21 @@ class ShippingOption
 	/**
 	 * Gets the price.
 	 * 
-	 * @api
-	 * 
 	 * @return float
 	 */
 	public function getPrice()
 	{
 		return $this->price;
 	}
+
+    /**
+     * Gets the index.
+     *
+     * @return integer
+     */
+    public function getPrice()
+    {
+        return $this->index;
+    }
 
 }

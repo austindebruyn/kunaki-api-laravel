@@ -11,21 +11,21 @@ class KunakiOrder
 	/**
 	 * The end-result of this Kunaki API request.
 	 * 
-	 * @param Destination
+	 * @var Destination
 	 */
 	private $destination;
 
 	/**
 	 * The customer to ship to.
 	 * 
-	 * @param Customer
+	 * @var Customer
 	 */
 	private $customer;
 
 	/**
 	 * The array containing products, which is a pair of string productID and integer quantity
 	 * 
-	 * @param array
+	 * @var array
 	 */
 	private $product_list = array();
 
@@ -34,15 +34,23 @@ class KunakiOrder
 	 * populate this list by calling the getShippingOptions method. Certain methods will
 	 * set this array to null, like changing the product_list or Destination.
 	 * 
-	 * @param array|null
+	 * @var array|null
 	 */
 	private $shipping_options = null;
+
+    /**
+     * This integer is the index into the above array of shipping options that the user
+     * selected.
+     *
+     * @var integer
+     */
+    private $shipping_option_index = -1;
 
 	/**
 	 * Holds a bool representing whether or not the order has been submitted to Kunaki's
 	 * servers. This is to make sure we don't submit more than once.
 	 * 
-	 * @param bool
+	 * @var bool
 	 */
 	private $submitted = false;
 
@@ -50,7 +58,7 @@ class KunakiOrder
 	 * Holds the order ID received from Kunaki. Until $submitted is true, this string will
 	 * be empty.
 	 * 
-	 * @param string
+	 * @var string
 	 */
 	private $order_id;
 
@@ -178,8 +186,8 @@ class KunakiOrder
 	 * 
 	 * @return array of ShippingOption
 	 */
-	public function getShippingOptions($pretend = false) {
-
+	public function getShippingOptions($pretend = false)
+	{
 		// You need to set $destination to get shipping options, but not $customer.
 		if (!$this->destination)
 			throw new \BadMethodCallException("You have to set a Destination to ship to.");
@@ -193,8 +201,12 @@ class KunakiOrder
 		$http_query .= "&State_Province=".$this->destination->getStateProvince();
 		$http_query .= "&PostalCode=".$this->destination->getPostalCode();
 		$http_query .= "&Country=".$this->destination->getCountry();
-		foreach ($this->product_list as $product)
-			$http_query .= "&ProductId=".$product[0]."&Quantity=".$product[1];
+
+		array_map(
+			function ($p) {$http_query .= "&ProductId=".$p[0]."&Quantity=".$p[1];},
+			$this->product_list
+		);
+
 		$http_query .= "&ResponseType=xml";
 		$http_query = substr($http_query, 0, 1024);
 		$http_query = str_replace(' ', '+', $http_query);
@@ -206,8 +218,11 @@ class KunakiOrder
 		$cache_key = CACHE_KEY_PREFIX.md5($http_query);
 
 		if (\Cache::has($cache_key))
+		{
 			return $this->shipping_options = \Cache::get($cache_key);
-		else {
+		}
+		else
+		{
 			// Fetch response via cURL
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -224,13 +239,14 @@ class KunakiOrder
 		$xdoc = simplexml_load_string($content);
 		
 		if ($xdoc->ErrorCode != '0')
-			throw new ErrorException('Kunaki API: '.$xdoc->ErrorText);
+			throw new \ErrorException('Kunaki API: '.$xdoc->ErrorText);
 
 		$this->shipping_options = array();
 
-		foreach($xdoc->Option as $option) {
+		foreach($xdoc->Option as $option)
+		{
 			if (!isset($option->Description) || !isset($option->DeliveryTime) || !isset($option->Price))
-				throw new ErrorException('Kunaki API: Malformed XML response.');
+				throw new \ErrorException('Kunaki API: Malformed XML response.');
 			array_push($this->shipping_options, new ShippingOption((string)$option->Description,
 															(string)$option->DeliveryTime,
 															(float)$option->Price));
@@ -308,41 +324,7 @@ class KunakiOrder
 		if (!isset($this->shipping_options[$shippingOptionIndex]))
 			throw new \OutOfRangeException;
 
-		// Build an HTTP query
-		$http_query  = KUNAKI_API_HOST."?RequestType=Order";
-		$http_query .= "&UserId=".\Config::get('kunaki-api-laravel::email');
-		$http_query .= "&Password=".\Config::get('kunaki-api-laravel::password');
-		$http_query .= "&Mode=". ($pretend? 'Test' : 'Live');
-		$http_query .= "&Name=".urlencode($this->customer->getName());
-		$http_query .= "&Company=".urlencode($this->customer->getCompany());
-		for ($i = 0; $i < 2; $i++)
-			if (isset($this->customer->getAddress()[$i]))
-		$http_query .= "&Address".($i+1)."=".urlencode($this->customer->getAddress()[$i]);
-		$http_query .= "&City=".urlencode($this->customer->getCity());
-		$http_query .= "&State_Province=".urlencode($this->destination->getStateProvince());
-		$http_query .= "&PostalCode=".urlencode($this->destination->getPostalCode());
-		$http_query .= "&Country=".urlencode($this->destination->getCountry());
-		$http_query .= "&ShippingDescription=".urlencode($this->shipping_options[$shippingOptionIndex]->getName());
-		foreach ($this->product_list as $product)
-			$http_query .= "&ProductId=".urlencode($product[0])."&Quantity=".urlencode($product[1]);
-		$http_query .= "&ResponseType="."xml";
 
-		// cURL off the query
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_HEADER, 0);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5); 
-		curl_setopt($ch, CURLOPT_TIMEOUT, 8);
-
-		curl_setopt($ch, CURLOPT_URL, $http_query);
-		$content = curl_exec($ch);
-		curl_close($ch);
-
-		// Parse the response
-		$xdoc = simplexml_load_string($content);
-
-		if ($xdoc->ErrorCode != '0')
-			throw new \ErrorException('Kunaki API: '.$xdoc->ErrorText);
 
 		$this->submitted = true;
 		$this->order_id = $xdoc->OrderId;

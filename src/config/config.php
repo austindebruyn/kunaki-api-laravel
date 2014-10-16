@@ -62,4 +62,17 @@ return array(
 		'order_status' 			=> 30,
 
 	),
+
+    /*
+    |--------------------------------------------------------------------------
+    | HTTP timeouts
+    |--------------------------------------------------------------------------
+    |
+    | How long should the HTTP queries wait to hear from Kunaki's servers before
+    | timing out and returning a null response. If Kunaki's servers go down, it's
+    | important that this flag is set or your application will hang indefinitely.
+    | You can set this to 0 for no timeout.
+    |
+    */
+    'http_timeout'  => 0,
 );
