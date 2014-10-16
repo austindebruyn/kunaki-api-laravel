@@ -1,5 +1,7 @@
 <?php namespace Austin\KunakiApiLaravel\Protocol;
 
+use Austin\KunakiApiLaravel\Responses\ResponseContract;
+
 /**
  * This defines a contract that different protocols should adhere to.
  * Kunaki's API allows you to connect over several protocols. The one
@@ -10,7 +12,7 @@ interface ProtocolContract {
 	/**
 	 * This should send the order to Kunaki. Returns true if successful.
 	 * 
-	 * @return void
+	 * @return ResponseContract
 	 */
 	function send();
 

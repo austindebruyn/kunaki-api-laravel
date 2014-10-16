@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 use Austin\KunakiApiLaravel\ShippingOption;
 
@@ -24,7 +24,7 @@ class ShippingOptionTest extends TestCase {
 	 */
 	public function testBadInput() {
 
-		$s = new ShippingOption('', '', '');
+		$s = new ShippingOption('', '', '', 0);
 	}
 
 }

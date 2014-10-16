@@ -49,7 +49,7 @@ class ShippingOption
 	 * 
 	 * @throws InvalidArgumentException
 	 */
-	public function __construct($name, $delivery_time, $price, $index)
+	public function __construct($name, $delivery_time, $price, $index = -1)
 	{
 
 		if (!is_string($name) || strlen($name) < 1)
@@ -104,7 +104,7 @@ class ShippingOption
      *
      * @return integer
      */
-    public function getPrice()
+    public function getIndex()
     {
         return $this->index;
     }

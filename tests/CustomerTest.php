@@ -24,8 +24,7 @@ class CustomerTest extends TestCase {
 	public function testBogusInput() {
 
 		$twoHundredChars = '';
-		for ($i = 0; $i < 200; $i++)
-			$twoHundredChars .= 'A';
+		for ($i = 0; $i < 200; $i++) $twoHundredChars .= 'A';
 
 		$input = array(
 			array('A', '', 'A', array(array('A'))),
